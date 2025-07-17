@@ -33,3 +33,7 @@ app.post('/upload', upload.single('photo'), async (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor escuchando en http://0.0.0.0:${PORT}`);
 });
+
+app.get('/', (req, res) => {
+  res.send('Hello from AWS APIs!');
+});
