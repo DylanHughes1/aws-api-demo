@@ -1,0 +1,37 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Subir a S3</title>
+</head>
+
+<body>
+    <h1>Subir imagen a S3</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="photo" id="photo" required />
+        <button type="submit">Subir</button>
+    </form>
+    <p id="response"></p>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            const file = document.getElementById('photo').files[0];
+            formData.append('photo', file);
+
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+            document.getElementById('response').textContent = result.url ? `Archivo subido: ${result.url}` : 'Error al subir.';
+        });
+    </script>
+</body>
+
+</html>
