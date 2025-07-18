@@ -29,9 +29,12 @@
             });
 
             const result = await response.json();
-            document.getElementById('response').textContent = result.url ? `Archivo subido: ${result.url}` : 'Error al subir.';
+            document.getElementById('response').textContent = result.s3Data?.url
+                ? `Archivo subido: ${result.s3Data.url}`
+                : 'Error al subir.';
         });
     </script>
+
 </body>
 
 </html>
