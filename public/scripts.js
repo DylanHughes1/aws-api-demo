@@ -1,13 +1,68 @@
-//Subir archivo
-const form = document.getElementById('uploadForm');
-form.addEventListener('submit', async (e) => {
+const loginForm = document.getElementById('loginForm');
+const loginResponse = document.getElementById('loginResponse');
+const loginSection = document.getElementById('loginSection');
+const uploadSection = document.getElementById('uploadSection');
+const uploadForm = document.getElementById('uploadForm');
+const showFilesBtn = document.getElementById('showFilesBtn');
+const fileList = document.getElementById('fileList');
+const logoutBtn = document.getElementById('logoutBtn');
+
+let accessToken = null;
+
+// === LOGIN ===
+loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const formData = new FormData();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const res = await fetch('/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (data.tokens?.accessToken) {
+            accessToken = data.tokens.accessToken;
+            loginResponse.textContent = 'Login exitoso!';
+            loginSection.style.display = 'none';
+            uploadSection.style.display = 'block';
+        } else {
+            loginResponse.textContent = 'Error: ' + (data.message || 'No se pudo autenticar');
+        }
+    } catch (error) {
+        loginResponse.textContent = 'Error de red: ' + error.message;
+    }
+});
+
+// === LOGOUT ===
+logoutBtn.addEventListener('click', () => {
+    accessToken = null;
+    loginSection.style.display = 'block';
+    uploadSection.style.display = 'none';
+    loginForm.reset();
+    document.getElementById('response').textContent = '';
+    fileList.innerHTML = '';
+    loginResponse.textContent = '';
+});
+
+// === SUBIR ARCHIVO ===
+uploadForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
     const file = document.getElementById('photo').files[0];
+    const formData = new FormData();
     formData.append('photo', file);
 
     const response = await fetch('/upload', {
         method: 'POST',
+        headers: {
+            Authorization: `Bearer ${accessToken}`
+        },
         body: formData,
     });
 
@@ -17,16 +72,19 @@ form.addEventListener('submit', async (e) => {
         : 'Error al subir.';
 });
 
-// Ver archivos
-document.getElementById('showFilesBtn').addEventListener('click', async () => {
-    const response = await fetch('/files');
+// === VER ARCHIVOS ===
+showFilesBtn.addEventListener('click', async () => {
+    const response = await fetch('/files', {
+        headers: {
+            Authorization: `Bearer ${accessToken}`
+        }
+    });
+
     const files = await response.json();
+    fileList.innerHTML = '';
 
-    const fileListDiv = document.getElementById('fileList');
-    fileListDiv.innerHTML = ''; // Limpiar antes
-
-    if (files.length === 0) {
-        fileListDiv.textContent = 'No hay archivos subidos.';
+    if (!files.length) {
+        fileList.textContent = 'No hay archivos subidos.';
         return;
     }
 
@@ -57,22 +115,20 @@ document.getElementById('showFilesBtn').addEventListener('click', async () => {
         deleteBtn.textContent = 'Eliminar';
         deleteBtn.style.marginTop = '5px';
         deleteBtn.addEventListener('click', async () => {
-            const confirmDelete = confirm(`¿Eliminar "${file.filename}"?`);
-            if (!confirmDelete) return;
+            if (!confirm(`¿Eliminar "${file.filename}"?`)) return;
 
             const res = await fetch('/delete', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${accessToken}`
                 },
                 body: JSON.stringify({ key: file.fileId }),
             });
 
             const result = await res.json();
             alert(result.message);
-
-            // Recargar lista luego de borrar
-            document.getElementById('showFilesBtn').click();
+            showFilesBtn.click();
         });
 
         container.appendChild(img);
@@ -84,6 +140,5 @@ document.getElementById('showFilesBtn').addEventListener('click', async () => {
         list.appendChild(container);
     });
 
-    fileListDiv.appendChild(list);
+    fileList.appendChild(list);
 });
-
