@@ -25,21 +25,18 @@ const uploadFileToS3 = async (file) => {
     };
 };
 
-const listAllFiles = async () => {
-    const params = {
-        Bucket: process.env.S3_BUCKET,
-    };
+const deleteFileFromS3 = async (key) => {
+    
+    await s3
+        .deleteObject({
+            Bucket: process.env.S3_BUCKET,
+            Key: key,
+        })
+        .promise();
+}
 
-    const data = await s3.listObjectsV2(params).promise();
-    return data.Contents.map(item => ({
-        key: item.Key,
-        lastModified: item.LastModified,
-        size: item.Size,
-        url: `https://${params.Bucket}.s3.amazonaws.com/${item.Key}`,
-    }));
-};
 
 module.exports = {
     uploadFileToS3,
-    listAllFiles
+    deleteFileFromS3
 };

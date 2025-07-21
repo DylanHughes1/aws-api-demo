@@ -6,5 +6,7 @@ const upload = multer({ dest: 'uploads/' });
 
 router.post('/upload', upload.single('photo'), imagesController.uploadFile);
 router.get('/files', imagesController.getFiles);
+router.post('/delete', imagesController.deleteFile);
+
 
 module.exports = router;

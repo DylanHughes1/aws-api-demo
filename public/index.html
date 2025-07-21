@@ -8,33 +8,19 @@
 </head>
 
 <body>
-    <h1>Subir imagen a S3</h1>
+    <h1>Subir imagen a S3 y a DynamoDB</h1>
     <form id="uploadForm" enctype="multipart/form-data">
         <input type="file" name="photo" id="photo" required />
         <button type="submit">Subir</button>
     </form>
     <p id="response"></p>
 
-    <script>
-        const form = document.getElementById('uploadForm');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData();
-            const file = document.getElementById('photo').files[0];
-            formData.append('photo', file);
+    <h1>Ver Imágenes</h1>
+    <div class="space-y"> <button id="showFilesBtn">Mostrar</button></div>
+    <div class="space-y" id="fileList"></div>
 
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData,
-            });
-
-            const result = await response.json();
-            document.getElementById('response').textContent = result.s3Data?.url
-                ? `Archivo subido: ${result.s3Data.url}`
-                : 'Error al subir.';
-        });
-    </script>
-
+    <script src="/scripts.js"></script>
+    <link rel="stylesheet" href="style.css">
 </body>
 
 </html>

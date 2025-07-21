@@ -26,7 +26,21 @@ async function listFiles() {
     return data.Items;
 }
 
+const deleteFileFromDynamo = async (key) => {
+    const params = {
+        TableName: 'Files',
+        Key: {
+            fileId: key 
+        }
+    };
+
+    await dynamo.delete(params).promise();
+};
+
+
+
 module.exports = {
     saveFileRecord,
-    listFiles
+    listFiles,
+    deleteFileFromDynamo
 };

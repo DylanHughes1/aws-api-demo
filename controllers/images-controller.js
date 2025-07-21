@@ -1,5 +1,5 @@
-const { saveFileRecord, listFiles } = require('../services/dynamoService');
-const { uploadFileToS3, listAllFiles } = require('../services/s3Service');
+const { saveFileRecord, listFiles, deleteFileFromDynamo } = require('../services/dynamoService');
+const { uploadFileToS3, deleteFileFromS3 } = require('../services/s3Service');
 
 const getFiles = async (req, res) => {
     try {
@@ -33,8 +33,25 @@ const uploadFile = async (req, res) => {
     }
 };
 
+const deleteFile = async (req, res) => {
+    try {
+        const { key } = req.body;
+
+        if (!key) return res.status(400).json({ message: 'Falta la key del archivo' });
+
+        await deleteFileFromS3(key);
+        await deleteFileFromDynamo(key);
+
+        res.json({ message: 'Archivo eliminado correctamente' });
+    } catch (error) {
+        console.error('Error al eliminar archivo:', error);
+        res.status(500).json({ message: 'Error al eliminar el archivo' });
+    }
+};
+
 
 module.exports = {
     getFiles,
     uploadFile,
+    deleteFile
 };
